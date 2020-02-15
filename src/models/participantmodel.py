@@ -32,4 +32,11 @@ class ParticipantModel:
 
     @classmethod
     def load(cls, channel_id, name):
-        return db.get_participant(channel_id, name)
+        participant_data = db.get_participant(channel_id, name)
+        if participant_data is not None:
+            participant = ParticipantModel(*participant_data[1:-1])
+            participant.timestamp = participant_data[-1]
+
+            return participant
+
+        return None

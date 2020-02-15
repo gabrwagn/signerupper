@@ -1,3 +1,4 @@
+from models.participantmodel import ParticipantModel
 import models.eventdb as db
 
 
@@ -50,4 +51,24 @@ class EventModel:
 
     @classmethod
     def load(cls, channel_id):
-        return db.get_event(channel_id)
+        """
+        Loads an event from database if it exists.
+        It also loads all participants of the event into its participants list.
+        :param channel_id:
+        :return:
+        """
+        event_data = db.get_event(channel_id)
+        event = None
+        if event_data is not None:
+            event = EventModel(*event_data[1:])
+            participant_data_list = db.get_participants(channel_id)
+            if participant_data_list is not None:
+                participants = []
+                for participant_data in participant_data_list:
+                    participant = ParticipantModel(*participant_data[1:-1])
+                    participant.timestamp = participant_data[-1]
+                    participants.append(participant)
+
+                event.participants = participants
+
+        return event
