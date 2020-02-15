@@ -25,7 +25,6 @@ class EventAspectParser:
                 name = name_value_pair[0].lower()
                 value = name_value_pair[1]
 
-                print(name, value)
                 if cls._is_valid_aspect_name(name) and cls._is_valid_aspect_value(name, value):
                     parsed_aspects[name] = value
                     was_parsed = True

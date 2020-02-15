@@ -104,7 +104,6 @@ class User(commands.Cog):
         name = user.display_name.title()
         name = utils.prune_participant_name(name)
 
-        print(name)
         if not name:  # Empty string
             await user.send(errors.INVALID_NAME)
             print("participant tried to sign up with a shitty name.")
