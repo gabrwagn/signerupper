@@ -3,6 +3,7 @@ import discord
 import utils.date as date
 import settings
 from models.eventmodel import EventModel
+from utils import utils
 
 zero_width_space = '\u200b'
 zero_width_line_break = '\u200b \n'
@@ -44,7 +45,8 @@ def create_participant_role_dict(decorators, participants):
     for participant in participants:
         rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
-        participant_entry = f"{decorator}  {participant.name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
+        participant_name = utils.prune_participant_name(participant.name)
+        participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
         role_dict[participant.role].append(participant_entry)
 
     return role_dict
