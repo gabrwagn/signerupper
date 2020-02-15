@@ -18,10 +18,12 @@ def create_event_subtext(event, active_participant_count, backup_participant_cou
 
     lines = [
         event_time_str,
-        event_description_str,
         event_instructions_str,
         event_signup_count_str
     ]
+    if event_description_str:
+        lines.insert(1, event_description_str)
+
     return zero_width_double_line_break.join(lines)
 
 
@@ -38,7 +40,8 @@ def create_participant_role_dict(decorators, participants):
         role_dict[role] = []
 
     ranked_participants_dict = create_ranked_participant_dict(participants)
-    for participant, rank in ranked_participants_dict.items():
+    for participant in participants.sort(key=lambda p: p.role):
+        rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
         participant_entry = f"{decorator}  {participant.name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
         role_dict[participant.role].append(participant_entry)
