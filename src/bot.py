@@ -42,9 +42,20 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
+    error_str = str(error)
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        print(str(error))
+        await ctx.author.send(error_str)
+        print("Command error:", error_str)
         return
+    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+        await ctx.author.send(error_str)
+        print("Command error:", error_str)
+        return
+    if isinstance(error, discord.ext.commands.errors.CheckFailure):
+        await ctx.author.send("That command can't be used in a DM, or you don't have the correct role for that command!")
+        print("Command error:", error_str)
+        return
+
     raise error
 
 
