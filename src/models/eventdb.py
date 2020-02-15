@@ -174,7 +174,7 @@ def insert_participant(participant):
     c.close()
 
 
-def get_event(channel_id) -> Optional[EventModel]:
+def get_event(channel_id):
     """
     :param channel_id:
     :return:
