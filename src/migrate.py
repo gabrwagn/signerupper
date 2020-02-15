@@ -48,7 +48,6 @@ async def migrate_channel(channel_id):
     time = old_event_data[3]
     description = old_event_data[4]
 
-
     event = EventModel(client.user.id, name, date, time, description, channel_id)
     event.save()
 
