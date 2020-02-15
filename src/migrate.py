@@ -26,10 +26,10 @@ async def on_ready():
     ]
 
     for channel_id in channel_ids:
-        migrate_channel(channel_id)
+        await migrate_channel(channel_id)
 
 
-def migrate_channel(channel_id):
+async def migrate_channel(channel_id):
     old_db_path = 'local/raids.db'
     c = sqlite3.connect(old_db_path)
     cur = c.cursor()
