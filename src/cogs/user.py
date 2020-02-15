@@ -13,7 +13,7 @@ import settings
 
 def has_valid_role():
     async def predicate(ctx):
-        if ctx.author is Member:
+        if type(ctx.author) is Member:
             for role in ctx.author.roles:
                 if role.name.title() in settings.VALID_USER_ROLES:
                     return True
