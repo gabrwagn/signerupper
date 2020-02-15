@@ -26,10 +26,10 @@ async def on_ready():
     ]
 
     for channel_id in channel_ids:
-        migrate_channel(channel_id)
+        await migrate_channel(channel_id)
 
 
-def migrate_channel(channel_id):
+async def migrate_channel(channel_id):
     old_db_path = 'local/raids.db'
     c = sqlite3.connect(old_db_path)
     cur = c.cursor()
@@ -64,7 +64,7 @@ def migrate_channel(channel_id):
         pclass = p[2]
         prole = p[3]
 
-        channel = client.get_channel(channel_id)
+        channel = await client.fetch_channel(channel_id)
         member = discord.utils.get(channel.members, display_name=name)
 
         if member is not None:
