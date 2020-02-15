@@ -1,4 +1,5 @@
 import discord
+from discord import Member
 from discord.ext import commands
 
 from models.eventmodel import EventModel
@@ -12,9 +13,10 @@ import settings
 
 def has_valid_role():
     async def predicate(ctx):
-        for role in ctx.author.roles:
-            if role.name.title() in settings.VALID_USER_ROLES:
-                return True
+        if ctx.author is Member:
+            for role in ctx.author.roles:
+                if role.name.title() in settings.VALID_USER_ROLES:
+                    return True
         return False
 
     return commands.check(predicate)
