@@ -40,7 +40,8 @@ def create_participant_role_dict(decorators, participants):
         role_dict[role] = []
 
     ranked_participants_dict = create_ranked_participant_dict(participants)
-    for participant in participants.sort(key=lambda p: p.role):
+    participants.sort(key=lambda p: p.identifier)
+    for participant in participants:
         rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
         participant_entry = f"{decorator}  {participant.name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
@@ -80,6 +81,9 @@ def create(channel_id, decorators, uid):
     :return:
     """
     event = EventModel.load(channel_id)
+
+    if event is None:
+        return discord.Embed(title="Error!", colour=discord.Colour(0x36393E))
 
     active_participant_count = len(list(filter(lambda p: p.role in settings.ROLES.ACTIVE, event.participants)))
     backup_participant_count = len(list(filter(lambda p: p.role == settings.ROLES.BACKUP, event.participants)))
