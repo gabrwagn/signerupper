@@ -63,22 +63,22 @@ async def migrate_channel(channel_id):
     c.commit()
     c.close()
 
+    channel = await client.fetch_channel(channel_id)
+    members = channel.members
+
     for p in players_data:
         pname = p[1]
         pclass = p[2]
         prole = p[3]
         print("Reading player data:", pname, pclass, prole)
 
-        channel = await client.fetch_channel(channel_id)
-        member = discord.utils.get(channel.members, display_name=name)
+        member = discord.utils.find(lambda m: m.display_name == pname, members)
 
         if member is not None:
             participant = ParticipantModel(member.id, pname, pclass, prole, channel_id)
             participant.save()
             print("Creating a new participant..")
             print(participant.name, participant.identifier, participant.role)
-        else:
-            print("Couldnt find member..")
     
     print("Done!")
 
