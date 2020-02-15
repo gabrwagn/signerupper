@@ -64,7 +64,7 @@ def migrate_channel(channel_id):
         pclass = p[2]
         prole = p[3]
 
-        channel = client.get_channel(channel_id)
+        channel = await client.fetch_channel(channel_id)
         member = discord.utils.get(channel.members, display_name=name)
 
         if member is not None:
