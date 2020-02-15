@@ -30,6 +30,7 @@ async def on_ready():
 
 
 async def migrate_channel(channel_id):
+    print("Migrating channel:", channel_id)
     old_db_path = 'local/raids.db'
     c = sqlite3.connect(old_db_path)
     cur = c.cursor()
@@ -47,8 +48,11 @@ async def migrate_channel(channel_id):
     time = old_event_data[3]
     description = old_event_data[4]
 
+
     event = EventModel(client.user.id, name, date, time, description, channel_id)
     event.save()
+
+    print("Created event based on old event: ", event.name, event.date, event.time, event.description)
 
     sql = """ SELECT * FROM players WHERE lockout=? AND channel=? """
 
@@ -63,6 +67,7 @@ async def migrate_channel(channel_id):
         pname = p[1]
         pclass = p[2]
         prole = p[3]
+        print("Reading player data:", pname, pclass, prole)
 
         channel = await client.fetch_channel(channel_id)
         member = discord.utils.get(channel.members, display_name=name)
@@ -70,6 +75,12 @@ async def migrate_channel(channel_id):
         if member is not None:
             participant = ParticipantModel(member.id, pname, pclass, prole, channel_id)
             participant.save()
+            print("Creating a new participant..")
+            print(participant.name, participant.identifier, participant.role)
+        else:
+            print("Couldnt find member..")
+    
+    print("Done!")
 
 
 if __name__ == "__main__":
