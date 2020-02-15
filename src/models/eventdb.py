@@ -2,9 +2,6 @@ import sqlite3
 import os.path
 from typing import Optional, List
 
-from models.eventmodel import EventModel
-from models.participantmodel import ParticipantModel
-
 DB_FILEPATH = ""
 
 
@@ -177,7 +174,7 @@ def insert_participant(participant):
     c.close()
 
 
-def get_event(channel_id) -> Optional[EventModel]:
+def get_event(channel_id):
     """
     :param channel_id:
     :return:
@@ -192,16 +189,10 @@ def get_event(channel_id) -> Optional[EventModel]:
     c.commit()
     c.close()
 
-    if event_data is not None:
-        event = EventModel(*event_data[1:])
-        participants = get_participants(channel_id)
-        event.participants = participants
-        return event
-
-    return None
+    return event_data
 
 
-def get_participant(channel_id, name) -> Optional[ParticipantModel]:
+def get_participant(channel_id, name):
     c = connect()
     cur = c.cursor()
 
@@ -216,15 +207,10 @@ def get_participant(channel_id, name) -> Optional[ParticipantModel]:
     c.commit()
     c.close()
 
-    if participant_data is not None:
-        participant = ParticipantModel(*participant_data[1:-1])
-        participant.timestamp = participant_data[-1]
-        return participant
-
-    return None
+    return participant_data
 
 
-def get_participants(channel_id) -> List:
+def get_participants(channel_id):
     c = connect()
     cur = c.cursor()
 
@@ -239,12 +225,5 @@ def get_participants(channel_id) -> List:
     c.commit()
     c.close()
 
-    if participant_data_list is not None:
-        participants = []
-        for participant_data in participant_data_list:
-            participant = ParticipantModel(*participant_data[1:-1])
-            participant.timestamp = participant_data[-1]
-            participants.append(participant)
+    return participant_data_list
 
-        return participants
-    return []
