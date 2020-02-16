@@ -42,7 +42,7 @@ class Admin(commands.Cog):
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=True)
-        # TODO: Announce event
+        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT)
 
     @commands.command(name='place',
                       description='Place a member into a specific role.'
