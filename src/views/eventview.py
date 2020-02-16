@@ -10,22 +10,12 @@ zero_width_line_break = '\u200b \n'
 zero_width_double_line_break = '\n \u200b \n'
 
 
-def create_event_subtext(event, active_participant_count, backup_participant_count):
-    event_time_str = f'{event.date} {event.time}'
-    event_description_str = event.description
-    event_signup_count_str = f" {active_participant_count}/{settings.DEFAULT_CAP_PARTICIPANTS}  {zero_width_space}" \
-                             f" ({backup_participant_count}){zero_width_line_break} "
-    event_instructions_str = settings.INSTRUCTIONS
-
-    lines = [
-        event_time_str,
-        event_instructions_str,
-        event_signup_count_str
-    ]
-    if event_description_str:
-        lines.insert(1, event_description_str)
-
-    return zero_width_double_line_break.join(lines)
+def add_info_fields(embed, event, active_participant_count, backup_participant_count):
+    signup_count_str = f" {active_participant_count}/{settings.DEFAULT_CAP_PARTICIPANTS}  {zero_width_space}" \
+                               f" ({backup_participant_count}){zero_width_line_break} "
+    embed.add_field(name=zero_width_space, value=f":crossed_swords: {signup_count_str} {zero_width_line_break}")
+    embed.add_field(name=zero_width_space, value=f":calendar: {event.date} {zero_width_line_break}")
+    embed.add_field(name=zero_width_space, value=f":clock1: {event.time} {zero_width_line_break}")
 
 
 def create_participant_role_dict(decorators, participants):
@@ -101,8 +91,9 @@ def create(channel_id, decorators, uid):
         embed_fields.append({'name': name, 'value': value})
 
     event_title = f"__**{event.name}**__"
-    event_subtext = create_event_subtext(event, active_participant_count, backup_participant_count)
+    event_subtext = zero_width_double_line_break.join([event.description, settings.INSTRUCTIONS])
     embed = discord.Embed(title=event_title, colour=discord.Colour(0x36393E), description=event_subtext)
+    add_info_fields(embed, event, active_participant_count, backup_participant_count)
 
     for embed_field in embed_fields:
         embed.add_field(name=embed_field['name'], value=embed_field['value'], inline=True)
