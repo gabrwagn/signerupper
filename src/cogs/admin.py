@@ -42,21 +42,22 @@ class Admin(commands.Cog):
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=True)
-        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT)
+        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time, ctx.channel.mention))
 
     @commands.command(name='place',
-                      description='Place a member into a specific role.'
-                                  'If the member has already signed they will just be moved,'
-                                  'if they have not yet signed they will be added to the event at the provided role.',
+                      description='Place a member into the event, optionally a specific role can be set.'
+                                  'If the member has already signed they will just be moved to the role provided,'
+                                  'if they have not yet signed they will be assigned their default role or the'
+                                  'provided role in the command.',
                       brief='Place a member into a specific role',
                       aliases=[],
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
-    async def place(self, ctx: commands.Context, name, role):
+    async def place(self, ctx: commands.Context, name, role=""):
         name = utils.prune_participant_name(name)
         role = role.title()
 
-        if role not in settings.ROLES.ALL:
+        if role and role not in settings.ROLES.ALL:
             await ctx.author.send(errors.NONEXISTENT_ROLE)
             return
 
@@ -68,19 +69,17 @@ class Admin(commands.Cog):
         participant = ParticipantModel.load(ctx.channel.id, name)
 
         # Participant is not currently part of the event, try to find the member in the server
-        if participant is None:
-            print("Looking for player in server!")
-            user = discord.utils.get(ctx.channel.members, display_name=name)
-            if user is None:
-                await ctx.author.send(errors.NONEXISTENT_MEMBER)
-                return
+        user = discord.utils.find(lambda m: m.display_name.lower() == name.lower(), ctx.guild.members)
+        identifier = utils.extract_identifier(user)
+        if identifier is None:
+            await user.send(errors.NO_VALID_ROLE)
+            return
 
-            identifier = utils.extract_identifier(user)
-            if identifier is None:
-                await user.send(errors.NO_VALID_ROLE)
-                return
-
+        # If a role was not provided find the default one for the member
+        if not role:
             role = utils.extract_role(user, identifier)
+
+        if participant is None:
             participant = ParticipantModel(user.id, name, identifier, role, ctx.channel.id)
         else:
             current_role = participant.role
@@ -92,7 +91,7 @@ class Admin(commands.Cog):
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
-        # TODO: Tell player they have been placed
+        await user.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
 
     @commands.command(name='edit',
                       description='Edit one or more aspects of an event: name, date, time or description (descr), '

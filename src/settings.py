@@ -12,6 +12,7 @@ ANNOUNCEMENT_CHANNEL_NAME = "Announcements"
 class MESSAGE:
     NEW_EVENT = "New raid event: {} at {} {}, go sign up now in {}!"
     REMINDER = "Hey! Dont for get you signed up for {} {} {}!"
+    PLACEMENT = "Hey! You've been assigned {} in the raid {} at {} (see: {})!"
 
 
 # Event settings
