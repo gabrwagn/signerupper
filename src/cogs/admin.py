@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from models.eventmodel import EventModel
 from models.participantmodel import ParticipantModel
-from utils.date import is_valid_date_time, is_date_time_expired
+from utils.date import is_valid_date_time, is_date_time_expired, try_parse_day
 from utils.eventaspectparser import EventAspectParser
 import utils.errors as errors
 import utils.utils as utils
@@ -17,13 +17,18 @@ class Admin(commands.Cog):
         self.bot = bot
 
     @commands.command(name='event',
-                      description="Users with [Officer] role can create a new raid events in signup channels.",
+                      description='Create a new event by providing a name, date and time separated by spaces.'
+                                  'Optionally add an event description, example: \n'
+                                  '+event "Onyxia" 2020-10-11 19:00 "Clearing up whatever is left"\n'
+                                  'The date can also be a weekday (assumed to be the next upcoming date of that day):\n'
+                                  '+event "Molten Core" thursday 19:00',
                       brief='Create a new raid event.',
                       aliases=['addevent'],
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
-    async def create_event(self, ctx: commands.Context, name="default", date="2121-10-10", time="00:00"):
+    async def create_event(self, ctx: commands.Context, name, date, time, description=""):
 
+        date = try_parse_day(date)
         if not is_valid_date_time(date, time):
             await ctx.author.send(errors.INVALID_DATE.format(date, time))
             return
@@ -32,7 +37,7 @@ class Admin(commands.Cog):
             await ctx.author.send(errors.EXPIRED_DATE.format(date, time))
             return
 
-        event = EventModel(self.bot.user.id, name, date, time, "", ctx.channel.id)
+        event = EventModel(self.bot.user.id, name, date, time, description, ctx.channel.id)
         event.save()
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
@@ -40,7 +45,9 @@ class Admin(commands.Cog):
         # TODO: Announce event
 
     @commands.command(name='place',
-                      description='Place a member into a specific role',
+                      description='Place a member into a specific role.'
+                                  'If the member has already signed they will just be moved,'
+                                  'if they have not yet signed they will be added to the event at the provided role.',
                       brief='Place a member into a specific role',
                       aliases=[],
                       pass_context=True)
@@ -88,7 +95,10 @@ class Admin(commands.Cog):
         # TODO: Tell player they have been placed
 
     @commands.command(name='edit',
-                      description='Edit one or more aspects of an event: name, date, time or description',
+                      description='Edit one or more aspects of an event: name, date, time or description (descr), '
+                                  'example: \n +edit "name=Molten Core + Onyxia" \n'
+                                  'multiple aspects ca be changed at the same time separated by space:\n'
+                                  '+edit "time=18:00" "descr=Rescheduled because we almost cleared"',
                       brief='Edit aspects of an event',
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)

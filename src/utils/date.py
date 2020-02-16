@@ -2,6 +2,31 @@ import datetime
 import settings
 
 
+def try_parse_day(day):
+    """
+    Tries to parse the input as a weekday, if it fails it just returns the input unchanged
+    :param day:
+    :return:
+    """
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+    day_index = -1
+    for i, weekday in enumerate(days):
+        if day[0:3].lower() in weekday[0:3]:  # Allow matching first 3 letters: mon, tue, wed etc
+            day_index = i
+    if day_index == -1:
+        return day
+
+    today_index = datetime.date.today().weekday()
+    day_delta = day_index - today_index
+
+    if day_delta < 0:
+        day_delta += 7
+
+    date = datetime.date.today() + datetime.timedelta(days=day_delta)
+    return date.strftime(settings.DATE_FORMAT)
+
+
 def is_valid_date_time(date, time):
     full_date = date + " " + time
     try:
