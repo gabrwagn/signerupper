@@ -20,7 +20,7 @@ class User(commands.Cog):
                       brief="Sign up to an event.",
                       aliases=['signup'],
                       pass_context=True)
-    @commands.has_any_role(settings.VALID_USER_ROLES)
+    @commands.has_any_role(*settings.VALID_USER_ROLES)
     @commands.guild_only()
     async def signup(self, ctx: commands.Context):
         identifier = utils.extract_identifier(ctx.author)
@@ -36,13 +36,13 @@ class User(commands.Cog):
                       brief="Decline an event.",
                       aliases=[''],
                       pass_context=True)
-    @commands.has_any_role(settings.VALID_USER_ROLES)
+    @commands.has_any_role(*settings.VALID_USER_ROLES)
     @commands.guild_only()
     async def decline(self, ctx: commands.Context):
         await self.handle_event_response(ctx.author, ctx.channel, settings.ROLES.DECLINED)
 
     @commands.Cog.listener()
-    @commands.has_any_role(settings.VALID_USER_ROLES)
+    @commands.has_any_role(*settings.VALID_USER_ROLES)
     async def on_raw_reaction_add(self, payload):
         guild = self.bot.get_guild(payload.guild_id)
         channel = self.bot.get_channel(payload.channel_id)
