@@ -31,7 +31,7 @@ def create_participant_role_dict(decorators, participants):
         role_dict[role] = []
 
     ranked_participants_dict = create_ranked_participant_dict(participants)
-    participants.sort(key=lambda p: p.identifier)
+    participants.sort(key=lambda p: p.identifier, reverse=True)
     for participant in participants:
         rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
