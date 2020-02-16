@@ -20,7 +20,7 @@ def try_parse_day(day):
     today_index = datetime.date.today().weekday()
     day_delta = day_index - today_index
 
-    if day_delta < 0:
+    if day_delta <= 0:
         day_delta += 7
 
     date = datetime.date.today() + datetime.timedelta(days=day_delta)
