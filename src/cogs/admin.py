@@ -26,6 +26,7 @@ class Admin(commands.Cog):
                       aliases=['addevent'],
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def create_event(self, ctx: commands.Context, name, date, time, description=""):
 
         date = try_parse_day(date)
@@ -53,6 +54,7 @@ class Admin(commands.Cog):
                       aliases=[],
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def place(self, ctx: commands.Context, name, role=""):
         name = utils.prune_participant_name(name)
         role = role.title()
@@ -101,6 +103,7 @@ class Admin(commands.Cog):
                       brief='Edit aspects of an event',
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def edit(self, ctx: commands.Context, *raw_aspects):
         event = EventModel.load(ctx.channel.id)
         if event is None:
@@ -126,6 +129,7 @@ class Admin(commands.Cog):
 
     @commands.command(name='summary', description='Summarize event', brief='Summarize event', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def summary(self, ctx: commands.Context):
         event = EventModel.load(ctx.channel.id)
         if event is None:
@@ -140,6 +144,7 @@ class Admin(commands.Cog):
                       brief='Ping players who signed.',
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def remind(self, ctx: commands.Context):
         event = EventModel.load(ctx.channel.id)
         if event is None:
@@ -154,17 +159,20 @@ class Admin(commands.Cog):
 
     @commands.command(name='refresh', description='Refresh the event', brief='Refresh the event', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def refresh(self, ctx: commands.Context):
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
 
     @commands.command(name='clear', description='Remove ALL messages', brief='Clear channel', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def clear(self, ctx: commands.Context):
         await ctx.channel.purge(check=lambda m: m.id != ctx.message.id)  # The message will be deleted in on_message
 
     @commands.command(name='echo', description='Bot echoes your message', brief='Echo your message', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
     async def echo(self, ctx: commands.Context, message):
         await ctx.channel.send(message)
 
