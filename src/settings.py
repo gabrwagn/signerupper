@@ -55,7 +55,7 @@ class ROLES:
     @classmethod
     def from_identifier_default(cls, identifier):
         return {
-            "Warrior": ROLES.TANK,
+            "Warrior": ROLES.PHYSICAL,
             "Rogue": ROLES.PHYSICAL,
             "Hunter": ROLES.PHYSICAL,
             "Paladin": ROLES.HEALER,
