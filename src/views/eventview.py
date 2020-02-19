@@ -84,7 +84,7 @@ def create(channel_id, decorators, uid):
 
     participant_role_dict = create_participant_role_dict(decorators, event.participants)
     for role, participants in participant_role_dict.items():
-        name = f" **[{len(participants)}]   __{role}__**"
+        name = f"**[{len(participants)}]   __{role}__**"
         participants_str = '\n'.join(participants)  # turn the list into a string with linebreaks
         value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
 
