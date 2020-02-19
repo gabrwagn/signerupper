@@ -6,8 +6,8 @@ from models.eventmodel import EventModel
 from utils import utils
 
 zero_width_space = '\u200b'
-zero_width_line_break = '\u200b \n'
-zero_width_double_line_break = '\n \u200b \n'
+zero_width_line_break = '\u200b\n'
+zero_width_double_line_break = '\n\u200b\n'
 
 
 def add_info_fields(embed, event, active_participant_count, backup_participant_count):
