@@ -72,6 +72,9 @@ class Admin(commands.Cog):
 
         # Participant is not currently part of the event, try to find the member in the server
         user = discord.utils.find(lambda m: m.display_name.lower() == name.lower(), ctx.guild.members)
+        if user is None:
+            await ctx.author.send(errors.NONEXISTENT_MEMBER)
+
         identifier = utils.extract_identifier(user)
         if identifier is None:
             await user.send(errors.NO_VALID_ROLE)
