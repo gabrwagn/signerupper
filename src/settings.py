@@ -1,4 +1,3 @@
-
 # Formats
 TIME_FORMAT = '%H:%M'
 DATE_FORMAT = '%Y-%m-%d'

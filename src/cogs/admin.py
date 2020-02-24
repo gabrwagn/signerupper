@@ -44,6 +44,7 @@ class Admin(commands.Cog):
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=True)
         await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time, ctx.channel.mention))
+        utils.log(ctx.author.display_name, "created event", event.name, "...")
 
     @commands.command(name='place',
                       description='Place a member into the event, optionally a specific role can be set.'
@@ -97,6 +98,7 @@ class Admin(commands.Cog):
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
         await user.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
+        utils.log(ctx.author.display_name, "placed player", name, "...")
 
     @commands.command(name='edit',
                       description='Edit one or more aspects of an event: name, date, time or description (descr), '
@@ -128,6 +130,7 @@ class Admin(commands.Cog):
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+        utils.log(ctx.author.display_name, "edited event", event.name, "...")
         # TODO: Announce event edit
 
     @commands.command(name='summary', description='Summarize event', brief='Summarize event', pass_context=True)

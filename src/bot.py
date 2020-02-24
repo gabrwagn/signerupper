@@ -8,6 +8,7 @@ import models.eventdb as db
 from cogs.admin import Admin
 from cogs.user import User
 from cogs.debug import Debug
+from utils import utils
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -32,12 +33,12 @@ async def on_message(message):
     try:
         await message.delete()
     except discord.Forbidden:
-        print("Not allowed to delete that message")
+        utils.log("Not allowed to delete message...")
     except discord.NotFound:
         pass
         # print("Could not find message to delete")
     except discord.HTTPException:
-        print("Failed to delete message")
+        utils.log("Failed to delete message in channel")
 
 
 @client.event
@@ -45,15 +46,15 @@ async def on_command_error(ctx, error):
     error_str = str(error)
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
         await ctx.author.send(error_str)
-        print("Command error:", error_str)
+        utils.log("Command error:", error_str)
         return
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
         await ctx.author.send(error_str)
-        print("Command error:", error_str)
+        utils.log("Command error:", error_str)
         return
     if isinstance(error, discord.ext.commands.errors.CheckFailure):
         await ctx.author.send("That command can't be used in a DM, or you don't have the correct role for that command!")
-        print("Command error:", error_str)
+        utils.log("Command error:", error_str)
         return
 
     raise error
@@ -62,10 +63,10 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Activity(name="playing with his robo-balls."))
-    print("Logged in as " + client.user.name)
+    utils.log("Logged in as " + client.user.name)
 
 
 if __name__ == "__main__":
     db.init()
-    print('Starting up bot...')
+    utils.log('Starting up bot...')
     client.run(token)

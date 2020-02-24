@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord import Embed
 
@@ -69,3 +71,8 @@ async def show_event(channel, client, embed, new_event=False):
         await event_message.add_reaction(emoji=settings.SIGNUP_REACTION)
         await event_message.add_reaction(emoji=settings.DECLINE_REACTION)
 
+
+def log(*args):
+    is_logging_active = os.getenv('LOGGING')
+    if is_logging_active:
+        print(*args)

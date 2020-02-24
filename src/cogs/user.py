@@ -120,3 +120,4 @@ class User(commands.Cog):
         embed = view.create(channel.id, user.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=channel, client=self.bot, embed=embed)
 
+        utils.log(user.name, "responded to event...")
