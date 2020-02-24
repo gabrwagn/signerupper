@@ -18,6 +18,13 @@ def prune_participant_name(name):
     return name
 
 
+def fuzzy_string_match(first, second):
+    if len(first) > 3:
+        return second.lower() in first.lower()
+    else:
+        return first.lower() == second.lower()
+
+
 async def send_announcement(ctx, announcement):
     for channel in ctx.guild.channels:
         if channel.name.lower() == settings.ANNOUNCEMENT_CHANNEL_NAME.lower():

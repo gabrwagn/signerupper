@@ -71,7 +71,7 @@ class Admin(commands.Cog):
         participant = ParticipantModel.load(ctx.channel.id, name)
 
         # Participant is not currently part of the event, try to find the member in the server
-        user = discord.utils.find(lambda m: m.display_name.lower() == name.lower(), ctx.guild.members)
+        user = discord.utils.find(lambda m: utils.fuzzy_string_match(m.display_name, name), ctx.guild.members)
         if user is None:
             await ctx.author.send(errors.NONEXISTENT_MEMBER)
 
