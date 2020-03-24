@@ -36,7 +36,7 @@ def create_participant_role_dict(decorators, participants):
         rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
         participant_name = utils.prune_participant_name(participant.name)
-        participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
+        participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]}  {rank}"
         role_dict[participant.role].append(participant_entry)
 
     return role_dict
@@ -57,7 +57,7 @@ def create_ranked_participant_dict(participants):
     for participant in participants:
         rank_str = ""
         if participant.role in settings.ROLES.ACTIVE:
-            rank_str = f"[{rank}]"
+            rank_str = f" `{rank}`"
             rank += 1
         ranked_participant_dict[participant] = rank_str
 
