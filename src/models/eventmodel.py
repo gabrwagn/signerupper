@@ -3,7 +3,7 @@ import models.eventdb as db
 
 
 class EventModel:
-    def __init__(self, uid, name, date, time, description, channel_id):
+    def __init__(self, uid, name, date, time, description, channel_id, locked):
         """
         Matches the database entry order
         :param name:
@@ -20,12 +20,13 @@ class EventModel:
         self.description = description
         self.channel_id = channel_id
         self.participants = []
+        self.locked = locked
 
     def as_tuple(self):
         """
         :return:  EventModel as tuple (without uid)
         """
-        return self.uid, self.name, self.date, self.time, self.description, self.channel_id
+        return self.uid, self.name, self.date, self.time, self.description, self.channel_id, self.locked
 
     def set_attribute(self, name, value):
         """

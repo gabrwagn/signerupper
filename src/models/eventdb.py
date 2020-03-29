@@ -2,19 +2,19 @@ import sqlite3
 import os.path
 from typing import Optional, List
 
-DB_FILEPATH = ""
+DB_FILE_PATH = ""
 
 
 def init():
-    global DB_FILEPATH
-    DB_FILEPATH = os.getenv('DB_FILEPATH')
-    print('using database path: ', DB_FILEPATH, '...')
+    global DB_FILE_PATH
+    DB_FILE_PATH = os.getenv('DB_FILE_PATH')
+    print('using database path: ', DB_FILE_PATH, '...')
     print('making sure event table exists...')
     create_event_table()
 
 
 def connect():
-    return sqlite3.connect(DB_FILEPATH)
+    return sqlite3.connect(DB_FILE_PATH)
 
 
 def create_event_table():
@@ -32,7 +32,8 @@ def create_event_table():
                             date text NOT NULL,
                             time text NOT NULL,
                             description text NOT NULL,
-                            channel integer NOT NULL
+                            channel integer NOT NULL,
+                            locked bool DEFAULT 0
                          ); 
                          """
 
