@@ -105,6 +105,9 @@ class User(commands.Cog):
         participant = ParticipantModel.load(channel.id, name)
         if participant is not None:
             current_role = participant.role
+        else:
+            if event.is_locked():
+                role = settings.ROLES.BACKUP
 
         if current_role == settings.ROLES.BACKUP:
             await user.send(errors.BACKUP_SIGN)

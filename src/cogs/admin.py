@@ -38,12 +38,13 @@ class Admin(commands.Cog):
             await ctx.author.send(errors.EXPIRED_DATE.format(date, time))
             return
 
-        event = EventModel(self.bot.user.id, name, date, time, description, ctx.channel.id)
+        event = EventModel(self.bot.user.id, name, date, time, description, ctx.channel.id, 0)
         event.save()
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=True)
-        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time, ctx.channel.mention))
+        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time,
+                                                                             ctx.channel.mention))
         utils.log(ctx.author.display_name, "created event", event.name, "...")
 
     @commands.command(name='place',
@@ -163,6 +164,24 @@ class Admin(commands.Cog):
             if member is not None:
                 await member.send(settings.MESSAGE.REMINDER.format(event.name, event.date, event.time))
 
+    @commands.command(name='lock',
+                      description='Lock an event, forcing new sign-ups to be backup',
+                      brief='Refresh the event',
+                      pass_context=True)
+    @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
+    async def lock(self, ctx: commands.Context):
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            await ctx.author.send(errors.NONEXISTENT_EVENT)
+            return
+
+        event.lock()
+        event.save()
+
+        embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+        await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+
     @commands.command(name='refresh', description='Refresh the event', brief='Refresh the event', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
     @commands.guild_only()
@@ -181,4 +200,3 @@ class Admin(commands.Cog):
     @commands.guild_only()
     async def echo(self, ctx: commands.Context, message):
         await ctx.channel.send(message)
-

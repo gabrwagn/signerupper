@@ -107,8 +107,8 @@ def insert_event(event):
     c = connect()
     cur = c.cursor()
 
-    sql_info = """ INSERT INTO events(uid, name, date, time, description, channel)
-                        VALUES(?,?,?,?,?,?) """
+    sql_info = """ INSERT INTO events(uid, name, date, time, description, channel, locked)
+                        VALUES(?,?,?,?,?,?,?) """
 
     cur.execute(sql_info, event.as_tuple())
 

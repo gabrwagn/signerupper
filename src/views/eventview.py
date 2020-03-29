@@ -91,6 +91,9 @@ def create(channel_id, decorators, uid):
         embed_fields.append({'name': name, 'value': value})
 
     event_title = f"__**{event.name}**__"
+    if event.is_locked():
+        event_title += " :lock:"
+
     event_subtext = zero_width_double_line_break.join([event.description, settings.INSTRUCTIONS])
     embed = discord.Embed(title=event_title, colour=discord.Colour(0x36393E), description=event_subtext)
     add_info_fields(embed, event, active_participant_count, backup_participant_count)

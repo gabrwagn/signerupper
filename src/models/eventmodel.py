@@ -73,3 +73,9 @@ class EventModel:
                 event.participants = participants
 
         return event
+
+    def lock(self):
+        self.locked = 1
+
+    def is_locked(self):
+        return self.locked == 1
