@@ -177,7 +177,7 @@ class Admin(commands.Cog):
             return
 
         event.lock()
-        event.save()
+        event.save(append=True)
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
