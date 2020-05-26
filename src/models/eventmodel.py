@@ -81,5 +81,8 @@ class EventModel:
     def lock(self):
         self.locked = 1
 
+    def unlock(self):
+        self.locked = 0
+
     def is_locked(self):
         return self.locked == 1
