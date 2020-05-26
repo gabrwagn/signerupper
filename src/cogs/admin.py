@@ -166,7 +166,7 @@ class Admin(commands.Cog):
 
     @commands.command(name='lock',
                       description='Lock an event, forcing new sign-ups to be backup',
-                      brief='Refresh the event',
+                      brief='Lock event',
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
     @commands.guild_only()
@@ -176,11 +176,30 @@ class Admin(commands.Cog):
             await ctx.author.send(errors.NONEXISTENT_EVENT)
             return
 
-        event.lock()
-        event.save(append=True)
+        if not event.is_locked():
+            event.lock()
+            event.save(append=True)
 
-        embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
-        await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+
+    @commands.command(name='unlock',
+                      description='Unlock an event, forcing new sign-ups to be backup',
+                      brief='Unlock event',
+                      pass_context=True)
+    @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
+    async def unlock(self, ctx: commands.Context):
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            await ctx.author.send(errors.NONEXISTENT_EVENT)
+            return
+
+        if event.is_locked():
+            event.unlock()
+            event.save(append=True)
+            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
 
     @commands.command(name='refresh', description='Refresh the event', brief='Refresh the event', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
