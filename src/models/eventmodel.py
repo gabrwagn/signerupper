@@ -22,6 +22,8 @@ class EventModel:
         self.participants = []
         self.locked = locked
 
+        self._loaded = False
+
     def as_tuple(self):
         """
         :return:  EventModel as tuple (without uid)
@@ -45,7 +47,8 @@ class EventModel:
         :param append: If append is true this will edit the current event instead of overwriting it with a new event
         :return:
         """
-        if append:
+
+        if self._loaded or append:
             db.update_event(self)
         else:
             db.insert_event(self)
@@ -62,6 +65,7 @@ class EventModel:
         event = None
         if event_data is not None:
             event = EventModel(*event_data[1:])
+            event._loaded = True
             participant_data_list = db.get_participants(channel_id)
             if participant_data_list is not None:
                 participants = []

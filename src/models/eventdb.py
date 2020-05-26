@@ -81,7 +81,10 @@ def create_event_participants_table(channel_id):
                                    UNIQUE(uid, channel)
                                )
                                """
-    event_participant_trigger_query = f"""CREATE TRIGGER {table_name}_trigger
+    event_participant_drop_trigger_query = f""" 
+                                            DROP TRIGGER IF EXISTS {table_name}_trigger
+                                            """
+    event_participant_trigger_query = f""" CREATE TRIGGER {table_name}_trigger
                                               AFTER INSERT ON {table_name}
                                               BEGIN
                                                   UPDATE {table_name} 
@@ -91,6 +94,7 @@ def create_event_participants_table(channel_id):
                                        """
 
     cur.execute(event_participant_table_query)
+    cur.execute(event_participant_drop_trigger_query)
     cur.execute(event_participant_trigger_query)
     c.commit()
     c.close()
@@ -136,11 +140,12 @@ def update_event(event):
                              SET name=?,
                                  date=?,
                                  time=?,
-                                 description=?
+                                 description=?,
+                                 locked=?
                          WHERE id=?
                          """
 
-    cur.execute(event_update_query, (event.name, event.date, event.time, event.description, event_id))
+    cur.execute(event_update_query, (event.name, event.date, event.time, event.description, event.locked, event_id))
 
     c.commit()
     c.close()
