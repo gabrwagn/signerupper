@@ -59,12 +59,8 @@ async def on_command_error(ctx, error):
         await ctx.author.send("That command can't be used in a DM, or you don't have the correct role for that command!")
         utils.log("Command error:", error_str)
         return
-    if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
-        await ctx.author.send("The bot does not have the correct rights to run that command.")
-        utils.log("Command error:", error_str)
-        return
 
-    utils.log("Command error:", error_str)
+    raise error
 
 
 @client.event
