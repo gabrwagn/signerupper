@@ -14,7 +14,10 @@ load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 debug = os.getenv('DEBUG')
 
-client = Bot(command_prefix='+')
+intents = discord.Intents.default()
+intents.members = True
+
+client = Bot(command_prefix='+', intents=intents)
 
 client.add_cog(User(client))
 client.add_cog(Admin(client))
