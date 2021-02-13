@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord import Embed
 
@@ -16,6 +18,13 @@ def prune_participant_name(name):
     name = name.title()
 
     return name
+
+
+def fuzzy_string_match(first, second):
+    if len(first) > 3:
+        return second.lower() in first.lower()
+    else:
+        return first.lower() == second.lower()
 
 
 async def send_announcement(ctx, announcement):
@@ -62,3 +71,8 @@ async def show_event(channel, client, embed, new_event=False):
         await event_message.add_reaction(emoji=settings.SIGNUP_REACTION)
         await event_message.add_reaction(emoji=settings.DECLINE_REACTION)
 
+
+def log(*args):
+    is_logging_active = os.getenv('LOGGING')
+    if is_logging_active:
+        print(*args)

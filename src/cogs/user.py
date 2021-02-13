@@ -103,8 +103,11 @@ class User(commands.Cog):
 
         current_role = ""
         participant = ParticipantModel.load(channel.id, name)
-        if participant is not None:
-            current_role = participant.role
+        if event.is_locked():
+            role = settings.ROLES.BACKUP
+        else:
+            if participant is not None:
+                current_role = participant.role
 
         if current_role == settings.ROLES.BACKUP:
             await user.send(errors.BACKUP_SIGN)
@@ -120,3 +123,4 @@ class User(commands.Cog):
         embed = view.create(channel.id, user.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=channel, client=self.bot, embed=embed)
 
+        utils.log(user.name, "responded to event...")

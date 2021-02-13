@@ -6,8 +6,8 @@ from models.eventmodel import EventModel
 from utils import utils
 
 zero_width_space = '\u200b'
-zero_width_line_break = '\u200b \n'
-zero_width_double_line_break = '\n \u200b \n'
+zero_width_line_break = '\u200b\n'
+zero_width_double_line_break = '\n\u200b\n'
 
 
 def add_info_fields(embed, event, active_participant_count, backup_participant_count):
@@ -36,7 +36,7 @@ def create_participant_role_dict(decorators, participants):
         rank = ranked_participants_dict[participant]
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
         participant_name = utils.prune_participant_name(participant.name)
-        participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]} {rank}"
+        participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]}  {rank}"
         role_dict[participant.role].append(participant_entry)
 
     return role_dict
@@ -57,7 +57,7 @@ def create_ranked_participant_dict(participants):
     for participant in participants:
         rank_str = ""
         if participant.role in settings.ROLES.ACTIVE:
-            rank_str = f"[{rank}]"
+            rank_str = f" `{rank}`"
             rank += 1
         ranked_participant_dict[participant] = rank_str
 
@@ -84,13 +84,16 @@ def create(channel_id, decorators, uid):
 
     participant_role_dict = create_participant_role_dict(decorators, event.participants)
     for role, participants in participant_role_dict.items():
-        name = f" **[{len(participants)}]   __{role}__**"
+        name = f"**[{len(participants)}]   __{role}__**"
         participants_str = '\n'.join(participants)  # turn the list into a string with linebreaks
         value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
 
         embed_fields.append({'name': name, 'value': value})
 
     event_title = f"__**{event.name}**__"
+    if event.is_locked():
+        event_title += " :lock:"
+
     event_subtext = zero_width_double_line_break.join([event.description, settings.INSTRUCTIONS])
     embed = discord.Embed(title=event_title, colour=discord.Colour(0x36393E), description=event_subtext)
     add_info_fields(embed, event, active_participant_count, backup_participant_count)

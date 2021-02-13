@@ -38,12 +38,14 @@ class Admin(commands.Cog):
             await ctx.author.send(errors.EXPIRED_DATE.format(date, time))
             return
 
-        event = EventModel(self.bot.user.id, name, date, time, description, ctx.channel.id)
+        event = EventModel(self.bot.user.id, name, date, time, description, ctx.channel.id, 0)
         event.save()
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=True)
-        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time, ctx.channel.mention))
+        await utils.send_announcement(ctx, settings.MESSAGE.NEW_EVENT.format(event.name, event.date, event.time,
+                                                                             ctx.channel.mention))
+        utils.log(ctx.author.display_name, "created event", event.name, "...")
 
     @commands.command(name='place',
                       description='Place a member into the event, optionally a specific role can be set.'
@@ -71,7 +73,10 @@ class Admin(commands.Cog):
         participant = ParticipantModel.load(ctx.channel.id, name)
 
         # Participant is not currently part of the event, try to find the member in the server
-        user = discord.utils.find(lambda m: m.display_name.lower() == name.lower(), ctx.guild.members)
+        user = discord.utils.find(lambda m: utils.fuzzy_string_match(m.display_name, name), ctx.guild.members)
+        if user is None:
+            await ctx.author.send(errors.NONEXISTENT_MEMBER)
+
         identifier = utils.extract_identifier(user)
         if identifier is None:
             await user.send(errors.NO_VALID_ROLE)
@@ -94,6 +99,7 @@ class Admin(commands.Cog):
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
         await user.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
+        utils.log(ctx.author.display_name, "placed player", name, "...")
 
     @commands.command(name='edit',
                       description='Edit one or more aspects of an event: name, date, time or description (descr), '
@@ -125,6 +131,7 @@ class Admin(commands.Cog):
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+        utils.log(ctx.author.display_name, "edited event", event.name, "...")
         # TODO: Announce event edit
 
     @commands.command(name='summary', description='Summarize event', brief='Summarize event', pass_context=True)
@@ -157,6 +164,43 @@ class Admin(commands.Cog):
             if member is not None:
                 await member.send(settings.MESSAGE.REMINDER.format(event.name, event.date, event.time))
 
+    @commands.command(name='lock',
+                      description='Lock an event, forcing new sign-ups to be backup',
+                      brief='Lock event',
+                      pass_context=True)
+    @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
+    async def lock(self, ctx: commands.Context):
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            await ctx.author.send(errors.NONEXISTENT_EVENT)
+            return
+
+        if not event.is_locked():
+            event.lock()
+            event.save(append=True)
+
+            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+
+    @commands.command(name='unlock',
+                      description='Unlock an event, forcing new sign-ups to be backup',
+                      brief='Unlock event',
+                      pass_context=True)
+    @commands.has_role(settings.ROLES.ADMIN)
+    @commands.guild_only()
+    async def unlock(self, ctx: commands.Context):
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            await ctx.author.send(errors.NONEXISTENT_EVENT)
+            return
+
+        if event.is_locked():
+            event.unlock()
+            event.save(append=True)
+            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
+
     @commands.command(name='refresh', description='Refresh the event', brief='Refresh the event', pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
     @commands.guild_only()
@@ -175,4 +219,3 @@ class Admin(commands.Cog):
     @commands.guild_only()
     async def echo(self, ctx: commands.Context, message):
         await ctx.channel.send(message)
-
