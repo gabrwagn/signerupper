@@ -59,7 +59,7 @@ class User(commands.Cog):
             print("Retrieving message failed...")
 
         if all(var is not None for var in [guild, message, channel]):
-            member = guild.get_member(payload.user_id)
+            member = await guild.fetch_member(payload.user_id)
             if member is not None and member != self.bot.user:
                 if message.author == self.bot.user:
                     await self.handle_event_reaction(member, channel, emoji)

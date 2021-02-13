@@ -48,7 +48,7 @@ def extract_role(member, identifier):
     return settings.ROLES.from_identifier_default(identifier.title())
 
 
-async def show_event(channel, client, embed, new_event=False):
+async def get_event_message(channel, client):
     def is_event_message(m):
         # Look for a message that has an embed with a footer that contains the id of the bot
         if len(m.embeds) > 0:
@@ -58,7 +58,19 @@ async def show_event(channel, client, embed, new_event=False):
 
     # Check if the bot has an event message in this channel already
     event_message = await channel.history().find(is_event_message)
+
+    return event_message
+
+
+async def show_event(channel, client, embed, new_event=False):
+    def is_event_message(m):
+        # Look for a message that has an embed with a footer that contains the id of the bot
+        if len(m.embeds) > 0:
+            footer = m.embeds[0].footer
+            return False if footer is Embed.Empty else str(client.user.id) == m.embeds[0].footer.text
     await channel.purge(check=lambda m: not is_event_message(m))
+
+    event_message = await get_event_message(channel, client)
 
     if event_message is None:
         event_message = await channel.send(embed=embed)
@@ -76,3 +88,4 @@ def log(*args):
     is_logging_active = os.getenv('LOGGING')
     if is_logging_active:
         print(*args)
+

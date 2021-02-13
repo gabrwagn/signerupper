@@ -7,6 +7,7 @@ from utils.date import is_valid_date_time, is_date_time_expired, try_parse_day
 from utils.eventaspectparser import EventAspectParser
 import utils.errors as errors
 import utils.utils as utils
+import utils.date as date
 import views.eventview as view
 import views.summaryview as summary
 import settings
@@ -61,44 +62,31 @@ class Admin(commands.Cog):
         name = utils.prune_participant_name(name)
         role = role.title()
 
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            await ctx.author.send(errors.NONEXISTENT_EVENT)
+            return False
+
+        if date.is_date_time_expired(event.date, event.time):
+            await ctx.author.send(errors.EXPIRED_EVENT)
+            return False
+
         if role and role not in settings.ROLES.ALL:
             await ctx.author.send(errors.NONEXISTENT_ROLE)
             return
 
-        event = EventModel.load(ctx.channel.id)
-        if event is None:
-            await ctx.author.send(errors.NONEXISTENT_EVENT)
-            return
-
-        participant = ParticipantModel.load(ctx.channel.id, name)
-
-        # Participant is not currently part of the event, try to find the member in the server
-        user = discord.utils.find(lambda m: utils.fuzzy_string_match(m.display_name, name), ctx.guild.members)
-        if user is None:
+        members = ctx.channel.guild.fetch_members()
+        member = await members.find(lambda m: utils.fuzzy_string_match(m.display_name, name))
+        if member is None:
             await ctx.author.send(errors.NONEXISTENT_MEMBER)
-
-        identifier = utils.extract_identifier(user)
-        if identifier is None:
-            await user.send(errors.NO_VALID_ROLE)
             return
 
-        # If a role was not provided find the default one for the member
-        if not role:
-            role = utils.extract_role(user, identifier)
 
-        if participant is None:
-            participant = ParticipantModel(user.id, name, identifier, role, ctx.channel.id)
-        else:
-            current_role = participant.role
-            if current_role == role:
-                return
-            participant.role = role.title()
-
-        participant.save()
+        await self.add_member(ctx.channel, event, member, role)
 
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
-        await user.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
+        await member.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
         utils.log(ctx.author.display_name, "placed player", name, "...")
 
     @commands.command(name='edit',
@@ -205,6 +193,34 @@ class Admin(commands.Cog):
     @commands.has_role(settings.ROLES.ADMIN)
     @commands.guild_only()
     async def refresh(self, ctx: commands.Context):
+
+        # "re-adds" all members who have reacted to current event
+        event_message = await utils.get_event_message(channel=ctx.channel, client=self.bot)
+        if event_message is None:
+            return
+
+        reactions = event_message.reactions
+
+        event = EventModel.load(ctx.channel.id)
+        if event is None:
+            return
+        if is_date_time_expired(event.date, event.time):
+            return
+
+        checked_members = [] 
+        for reaction in reactions:
+            users = await reaction.users().flatten()
+            for user in users:
+                member = await ctx.channel.guild.fetch_member(user.id)
+                if member is None:
+                    await ctx.author.send(errors.NONEXISTENT_MEMBER)
+
+                role = settings.ROLES.DECLINED if str(reaction) == settings.DECLINE_REACTION else ""
+
+                if not user.bot and member not in checked_members:
+                    checked_members.append(member)
+                    await self.add_member(ctx.channel, event, member, role)
+
         embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
         await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed, new_event=False)
 
@@ -219,3 +235,31 @@ class Admin(commands.Cog):
     @commands.guild_only()
     async def echo(self, ctx: commands.Context, message):
         await ctx.channel.send(message)
+
+    async def add_member(self, channel, event, member, role=""):
+
+        identifier = utils.extract_identifier(member)
+        if identifier is None:
+            await user.send(errors.NO_VALID_ROLE)
+            return
+
+        # If a role was not provided find the default one for the member
+        if not role:
+            role = utils.extract_role(member, identifier)
+
+        name = member.display_name.title()
+        name = utils.prune_participant_name(name)
+
+        participant = ParticipantModel.load(channel.id, name)
+
+        if participant is None:
+            participant = ParticipantModel(member.id, name, identifier, role, channel.id)
+            await member.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, channel.mention))
+        else:
+            current_role = participant.role
+            if current_role == role:
+                return
+            participant.role = role.title()
+
+        participant.save()
+
