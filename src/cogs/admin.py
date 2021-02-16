@@ -74,8 +74,6 @@ class Admin(commands.Cog):
             return
 
         for name in names:
-            name = utils.prune_participant_name(name)
-
             members = ctx.channel.guild.fetch_members()
             member = await members.find(lambda m: utils.fuzzy_string_match(m.display_name, name))
             if member is None:
@@ -83,11 +81,10 @@ class Admin(commands.Cog):
                 return
 
             await self.add_member(ctx.channel, event, member, role)
-
-            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
-            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
-            await member.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
             utils.log(ctx.author.display_name, "placed player", name, "...")
+
+        embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+        await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
 
     @commands.command(name='edit',
                       description='Edit one or more aspects of an event: name, date, time or description (descr), '
