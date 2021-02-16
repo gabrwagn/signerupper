@@ -28,7 +28,7 @@ def create_participant_role_dict(decorators, participants):
     role_dict = {}
 
     for role in settings.ROLES.ALL:
-        role_dict[role] = []
+        role_dict[role] = {"first": [], "second": []}
 
     ranked_participants_dict = create_ranked_participant_dict(participants)
     participants.sort(key=lambda p: p.identifier, reverse=True)
@@ -37,7 +37,11 @@ def create_participant_role_dict(decorators, participants):
         decorator = discord.utils.get(decorators, name=participant.identifier.lower())
         participant_name = utils.prune_participant_name(participant.name)
         participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]}  {rank}"
-        role_dict[participant.role].append(participant_entry)
+
+        if len('\n'.join(role_dict[participant.role]["first"])) < 800:
+            role_dict[participant.role]["first"].append(participant_entry)
+        else:
+            role_dict[participant.role]["second"].append(participant_entry)
 
     return role_dict
 
@@ -83,12 +87,18 @@ def create(channel_id, decorators, uid):
     embed_fields = []
 
     participant_role_dict = create_participant_role_dict(decorators, event.participants)
+    embed_list = []
     for role, participants in participant_role_dict.items():
-        name = f"**[{len(participants)}]   __{role}__**"
-        participants_str = '\n'.join(participants)  # turn the list into a string with linebreaks
+        role_count = len(participants["first"] + participants["second"])
+        name = f"**[{role_count}]   __{role}__**"
+        participants_str = '\n'.join(participants["first"])  # turn the list into a string with linebreaks
         value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
 
         embed_fields.append({'name': name, 'value': value})
+        if len(participants["second"]) > 0:
+            participants_str = '\n'.join(participants["second"])  # turn the list into a string with linebreaks
+            value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
+            embed_fields.append({'name': name, 'value': value})
 
     event_title = f"__**{event.name}**__"
     if event.is_locked():
