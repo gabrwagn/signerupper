@@ -28,8 +28,9 @@ def create_participant_role_dict(decorators, participants):
     role_dict = {}
 
     for role in settings.ROLES.ALL:
-        role_dict[role] = {"first": [], "second": []}
+        role_dict[role] = [[]]
 
+    index = 0
     ranked_participants_dict = create_ranked_participant_dict(participants)
     participants.sort(key=lambda p: p.identifier, reverse=True)
     for participant in participants:
@@ -38,10 +39,12 @@ def create_participant_role_dict(decorators, participants):
         participant_name = utils.prune_participant_name(participant.name)
         participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]}  {rank}"
 
-        if len('\n'.join(role_dict[participant.role]["first"])) < 800:
-            role_dict[participant.role]["first"].append(participant_entry)
-        else:
-            role_dict[participant.role]["second"].append(participant_entry)
+        # Make sure the string is not too long for the embed field, if not start a new list
+        if len('\n'.join(role_dict[participant.role][index])) > 850:
+            role_dict[participant.role].append([])
+            index += 1
+
+        role_dict[participant.role][index].append(participant_entry)
 
     return role_dict
 
@@ -89,14 +92,11 @@ def create(channel_id, decorators, uid):
     participant_role_dict = create_participant_role_dict(decorators, event.participants)
     embed_list = []
     for role, participants in participant_role_dict.items():
-        role_count = len(participants["first"] + participants["second"])
+        role_count = sum([len(participant_list) for participant_list in participants])
         name = f"**[{role_count}]   __{role}__**"
-        participants_str = '\n'.join(participants["first"])  # turn the list into a string with linebreaks
-        value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
 
-        embed_fields.append({'name': name, 'value': value})
-        if len(participants["second"]) > 0:
-            participants_str = '\n'.join(participants["second"])  # turn the list into a string with linebreaks
+        for participant_list in participants:
+            participants_str = '\n'.join(participant_list)  # turn the list into a string with linebreaks
             value = f"{zero_width_line_break} {participants_str} {zero_width_double_line_break}"
             embed_fields.append({'name': name, 'value': value})
 
