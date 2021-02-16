@@ -30,6 +30,7 @@ def create_participant_role_dict(decorators, participants):
     for role in settings.ROLES.ALL:
         role_dict[role] = [[]]
 
+    list_index_per_role = {}
     index = 0
     ranked_participants_dict = create_ranked_participant_dict(participants)
     participants.sort(key=lambda p: p.identifier, reverse=True)
@@ -39,9 +40,14 @@ def create_participant_role_dict(decorators, participants):
         participant_name = utils.prune_participant_name(participant.name)
         participant_entry = f"{decorator}  {participant_name[0:settings.PARTICIPANT_MAX_NAME_LENGTH]}  {rank}"
 
+        if participant.role not in list_index_per_role:
+            list_index_per_role[participant.role] = 0
+        index = list_index_per_role[participant.role]
+
         # Make sure the string is not too long for the embed field, if not start a new list
         if len('\n'.join(role_dict[participant.role][index])) > 850:
             role_dict[participant.role].append([])
+            list_index_per_role[participant.role] += 1
             index += 1
 
         role_dict[participant.role][index].append(participant_entry)
