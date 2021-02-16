@@ -61,11 +61,16 @@ def create_ranked_participant_dict(participants):
     ranked_participant_dict = {}
 
     rank = 1
+    backup_rank = 1
     for participant in participants:
         rank_str = ""
         if participant.role in settings.ROLES.ACTIVE:
             rank_str = f" `{rank}`"
             rank += 1
+        elif participant.role in settings.ROLES.BACKUP:
+            rank_str = f" `{backup_rank}`"
+            backup_rank += 1
+
         ranked_participant_dict[participant] = rank_str
 
     return ranked_participant_dict
