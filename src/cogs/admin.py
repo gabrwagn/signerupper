@@ -208,9 +208,10 @@ class Admin(commands.Cog):
         for reaction in reactions:
             users = await reaction.users().flatten()
             for user in users:
-                member = await ctx.channel.guild.fetch_member(user.id)
+                member = ctx.channel.guild.get_member(user.id)
                 if member is None:
-                    await ctx.author.send(errors.NONEXISTENT_MEMBER)
+                    utils.log("Player not found when attempting to add from reactions on +refresh")
+                    return
 
                 role = settings.ROLES.DECLINED if str(reaction) == settings.DECLINE_REACTION else ""
 
