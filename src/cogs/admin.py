@@ -58,10 +58,7 @@ class Admin(commands.Cog):
                       pass_context=True)
     @commands.has_role(settings.ROLES.ADMIN)
     @commands.guild_only()
-    async def place(self, ctx: commands.Context, name, role=""):
-        name = utils.prune_participant_name(name)
-        role = role.title()
-
+    async def place(self, ctx: commands.Context, role, *names):
         event = EventModel.load(ctx.channel.id)
         if event is None:
             await ctx.author.send(errors.NONEXISTENT_EVENT)
@@ -71,23 +68,26 @@ class Admin(commands.Cog):
             await ctx.author.send(errors.EXPIRED_EVENT)
             return False
 
+        role = role.title()
         if role and role not in settings.ROLES.ALL:
             await ctx.author.send(errors.NONEXISTENT_ROLE)
             return
 
-        members = ctx.channel.guild.fetch_members()
-        member = await members.find(lambda m: utils.fuzzy_string_match(m.display_name, name))
-        if member is None:
-            await ctx.author.send(errors.NONEXISTENT_MEMBER)
-            return
+        for name in names:
+            name = utils.prune_participant_name(name)
 
+            members = ctx.channel.guild.fetch_members()
+            member = await members.find(lambda m: utils.fuzzy_string_match(m.display_name, name))
+            if member is None:
+                await ctx.author.send(errors.NONEXISTENT_MEMBER)
+                return
 
-        await self.add_member(ctx.channel, event, member, role)
+            await self.add_member(ctx.channel, event, member, role)
 
-        embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
-        await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
-        await member.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
-        utils.log(ctx.author.display_name, "placed player", name, "...")
+            embed = view.create(ctx.channel.id, ctx.guild.emojis, self.bot.user.id)
+            await utils.show_event(channel=ctx.channel, client=self.bot, embed=embed)
+            await member.send(settings.MESSAGE.PLACEMENT.format(role, event.name, event.date, ctx.channel.mention))
+            utils.log(ctx.author.display_name, "placed player", name, "...")
 
     @commands.command(name='edit',
                       description='Edit one or more aspects of an event: name, date, time or description (descr), '
